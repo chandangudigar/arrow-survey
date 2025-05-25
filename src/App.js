@@ -2,49 +2,61 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Main from "./main/Main";
 import Signin from "./signin/Signin";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
 
 import Workorder from "./main/Workorder";
 import Create_Survey from "./main/Create_Survey";
-import { auth, firestore } from "./firebase";
 import Create_Workorder from "./main/Create_Workorder";
+import Survey from "./main/Survey";
+import { PrivateRoute } from "./main/PrivateRoute";
+import { Box, Typography } from "@mui/material";
+import { Headset } from "@mui/icons-material";
+import { auth, firestore } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { AuthContext, WorkorderContext, SurveyContext } from "./main/AuthCOntext";
 
 function App() {
-  const [user, setUser] = useState();
+  const [user, setuser] = useState({});
+  const [workorder, setWorkorder] = useState({});
+  const [survey, setSurvey] = useState({});
+
   useEffect(() => {
-    auth.onAuthStateChanged(async (user) => {
-      console.log(user);
-      // setUser(user);
-      if (user) {
-        const docRef = doc(firestore, "Users", user?.uid);
+    auth.onAuthStateChanged(async (userdata) => {
+      console.log(userdata);
+      if (userdata) {
+        const docRef = doc(firestore, "Users", userdata?.uid);
         const docSnap = await getDoc(docRef);
-        // console.log(docSnap);
         if (docSnap.exists()) {
-          setUser(docSnap.data());
-          // console.log(docSnap.data());
-        } else {
-          console.log("User is not logged in");
+          setuser(docSnap.data());
         }
       }
     });
   }, []);
-
   return (
-    <div className="App">
-      <header>Arrow Survey</header>
-      <Router>
-        <Routes>
-          <Route path="/" element={user ? <Navigate to="/main/workorder" /> : <Navigate to="signin" />} />
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/main" element={<Main />}>
-            <Route path="workorder" element={<Workorder />}></Route>
-            <Route path="create-survey" element={<Create_Survey />}></Route>
-            <Route path="create-workorder" element={<Create_Workorder />}></Route>
-          </Route>
-        </Routes>
-      </Router>
-    </div>
+    <Box className="App">
+      <AuthContext.Provider value={user}>
+        <WorkorderContext.Provider value={{ workorder, setWorkorder }}>
+          <SurveyContext.Provider value={{ survey, setSurvey }}>
+            <Routes>
+              <Route path="/" element={<PrivateRoute />}>
+                <Route path="/signin" element={<Signin />} />
+
+                <Route path="/main" element={<Main />}>
+                  <Route path="workorder" element={<Workorder />}>
+                    <Route path="create-workorder" element={<Create_Workorder />}></Route>
+                  </Route>
+                  <Route path="survey" element={<Outlet />}>
+                    <Route path=":id" element={<Survey />}></Route>
+                    <Route path="single-survey/:survey_id" element={<Create_Survey />}></Route>
+                    <Route path="create-survey" element={<Create_Survey />}></Route>
+                  </Route>
+                </Route>
+              </Route>
+            </Routes>
+          </SurveyContext.Provider>
+        </WorkorderContext.Provider>
+      </AuthContext.Provider>
+    </Box>
   );
 }
 

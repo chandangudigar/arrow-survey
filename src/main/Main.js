@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { auth, firestore } from "../firebase";
 
 import { doc, getDoc } from "firebase/firestore";
+import Navbar from "./navbar/Navbar";
+import { Box } from "@mui/material";
 
 function Main() {
   const [user, setUser] = useState();
+  const navigate = useNavigate();
+
   const fetchDetails = async () => {
     // auth.onAuthStateChanged(async (user) => {
     //   // console.log(user);
@@ -22,16 +26,6 @@ function Main() {
     // });
   };
 
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      window.location.href = "/signin";
-      console.log("User logged out successfully");
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   useEffect(() => {
     fetchDetails();
   }, []);
@@ -39,17 +33,17 @@ function Main() {
   return (
     <>
       {/* {userDetails ? ( */}
-      <div>
-        {" "}
-        {/* <img src={userDetails.photo} />
+      <>
+        <Navbar />
+        <Outlet />
+      </>{" "}
+      {/* <img src={userDetails.photo} />
           <p>username: {userDetails.email}</p>
           <p>Full name: {userDetails.fullname}</p> */}
-        <Outlet />
-      </div>
       {/* ) : ( */}
       {/* <p>Loading</p> */}
       {/* )} */}
-      <button onClick={handleLogout}>Logout</button>{" "}
+      {/* // <button onClick={handleLogout}>Logout</button>{" "} */}
     </>
   );
 }
