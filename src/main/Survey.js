@@ -1,10 +1,21 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import { collection, deleteDoc, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import React, { createElement, useEffect, useState, useContext } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { firestore } from "../firebase";
-import { Delete, Add, Download, House, ArrowRight, ArrowLeftSharp, ArrowLeftOutlined, ArrowBackIosNewOutlined } from "@mui/icons-material";
+import {
+  Delete,
+  Add,
+  Download,
+  House,
+  ArrowRight,
+  ArrowLeftSharp,
+  ArrowLeftOutlined,
+  ArrowBackIosNewOutlined,
+  ArrowOutward,
+  ArrowDownward,
+} from "@mui/icons-material";
 import { SurveyContext, WorkorderContext } from "./AuthCOntext";
 import Grid from "@mui/material/Grid2";
 
@@ -68,6 +79,14 @@ function Survey() {
     console.log("delete");
     getAllSurveys();
   };
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box sx={{ maxWidth: "1080px", margin: "0 auto", height: "100%" }}>
@@ -79,22 +98,38 @@ function Survey() {
         <Typography variant="h6" component="h6">
           {workorder.work_ordername}
         </Typography>
-        <Link to={`/main/survey/create-survey`}>
-          <Button size="small" variant="outlined" startIcon={<Add />} sx={{ marginLeft: "1rem" }}>
-            Create Survey
-          </Button>
-        </Link>
         <Button
-          size="small"
+          id="basic-button"
+          aria-controls={open ? "basic-menu" : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? "true" : undefined}
+          onClick={handleClick}
+          sx={{ marginLeft: "auto", marginRight: "0.5rem" }}
+          endIcon={<ArrowDownward />}
           variant="outlined"
-          startIcon={<Download />}
-          sx={{ marginLeft: "1rem" }}
-          onClick={() => {
-            hadleExport();
+        >
+          Options
+        </Button>
+        <Menu
+          id="basic-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          MenuListProps={{
+            "aria-labelledby": "basic-button",
           }}
         >
-          Export
-        </Button>
+          <MenuItem component={Link} to="/main/survey/create-survey">
+            Create Survey
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              hadleExport();
+            }}
+          >
+            Export
+          </MenuItem>
+        </Menu>
       </Box>
       <Box container sx={{ padding: "0.5rem", overflow: "auto", height: "calc(100% - 8rem)" }}>
         {surveyList?.map((work) => {
