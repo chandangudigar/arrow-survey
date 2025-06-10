@@ -15,6 +15,7 @@ import {
   ArrowBackIosNewOutlined,
   ArrowOutward,
   ArrowDownward,
+  Person,
 } from "@mui/icons-material";
 import { SurveyContext, WorkorderContext } from "./AuthCOntext";
 import Grid from "@mui/material/Grid2";
@@ -45,12 +46,16 @@ function Survey() {
   };
   const sendSurveys = (work) => {
     setSurvey(work);
-    navigate(`/main/survey/single-survey/${work.id}`);
+    navigate(`/main/survey/single-survey/${work.id}`, { state: { order: 0 } });
   };
   const hadleExport = () => {
-    var ws = XLSX.utils.json_to_sheet(surveyList);
+    let filteredSurveyList = surveyList.map((survey) => {
+      delete survey["id"];
+      return survey;
+    });
+    var ws = XLSX.utils.json_to_sheet(filteredSurveyList);
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    XLSX.utils.book_append_sheet(wb, ws, workorder.work_name);
 
     const excelBuffer = XLSX.write(wb, {
       bookType: "xlsx",
@@ -92,10 +97,8 @@ function Survey() {
     <Box sx={{ maxWidth: "1080px", margin: "0 auto", height: "100%" }}>
       <Box component="section" sx={{ p: 1, display: "flex", alignItems: "center" }}>
         <ArrowBackIosNewOutlined onClick={() => navigate("/main/workorder")} />
+        {/* <Typography variant="h6" component="h6" onClick={() => navigate("/main/workorder")}></Typography>{" "} */}
         <Typography variant="h6" component="h6" onClick={() => navigate("/main/workorder")}>
-          Work Order /
-        </Typography>{" "}
-        <Typography variant="h6" component="h6">
           {workorder.work_ordername}
         </Typography>
         <Button
@@ -119,7 +122,7 @@ function Survey() {
             "aria-labelledby": "basic-button",
           }}
         >
-          <MenuItem component={Link} to="/main/survey/create-survey">
+          <MenuItem component={Link} to={{ pathname: "/main/survey/create-survey" }} state={{ order: surveyList?.length + 1 }}>
             Create Survey
           </MenuItem>
           <MenuItem
@@ -151,7 +154,16 @@ function Survey() {
               <Box sx={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
                 <House sx={{ height: "35px", width: "35px" }} />
                 <Typography variant="h6" component="h6" color="#b6bec9" marginLeft="5px">
-                  {work.work_name}
+                  {work.order}
+                </Typography>
+                <Typography variant="h6" component="h6" color="#b6bec9" marginLeft="5px">
+                  {work.occupier_name}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                <Person sx={{ height: "20px", width: "20px" }} />
+                <Typography variant="p" component="p" color="#b6bec9" marginLeft="5px">
+                  {work.created_user.fullname}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", justifyContent: "right" }}>

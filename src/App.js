@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { React, useEffect, useState } from "react";
 import "./App.css";
 import Main from "./main/Main";
 import Signin from "./signin/Signin";
@@ -9,16 +9,21 @@ import Create_Survey from "./main/Create_Survey";
 import Create_Workorder from "./main/Create_Workorder";
 import Survey from "./main/Survey";
 import { PrivateRoute } from "./main/PrivateRoute";
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, Snackbar, Typography } from "@mui/material";
 import { Headset } from "@mui/icons-material";
 import { auth, firestore } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
-import { AuthContext, WorkorderContext, SurveyContext } from "./main/AuthCOntext";
+import { AuthContext, WorkorderContext, SurveyContext, NotificationContext } from "./main/AuthCOntext";
+
+import CloseIcon from "@mui/icons-material/Close";
 
 function App() {
   const [user, setuser] = useState({});
   const [workorder, setWorkorder] = useState({});
   const [survey, setSurvey] = useState({});
+  const [notification, setNotification] = useState(null);
+  const vertical = "top";
+  const horizontal = "center";
 
   useEffect(() => {
     auth.onAuthStateChanged(async (userdata) => {
@@ -32,27 +37,45 @@ function App() {
       }
     });
   }, []);
+  const action = (
+    <>
+      <IconButton size="small" aria-label="close" color="inherit" onClick={() => setNotification(null)}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </>
+  );
   return (
     <Box className="App">
       <AuthContext.Provider value={user}>
         <WorkorderContext.Provider value={{ workorder, setWorkorder }}>
           <SurveyContext.Provider value={{ survey, setSurvey }}>
-            <Routes>
-              <Route path="/" element={<PrivateRoute />}>
-                <Route path="/signin" element={<Signin />} />
+            <NotificationContext.Provider value={{ notification, setNotification }}>
+              <Snackbar
+                key={vertical + horizontal}
+                anchorOrigin={{ vertical, horizontal }}
+                open={notification}
+                autoHideDuration={5000}
+                onClose={() => setNotification(null)}
+                message={notification}
+                action={action}
+              />
+              <Routes>
+                <Route path="/" element={<PrivateRoute />}>
+                  <Route path="/signin" element={<Signin />} />
 
-                <Route path="/main" element={<Main />}>
-                  <Route path="workorder" element={<Workorder />}>
-                    <Route path="create-workorder" element={<Create_Workorder />}></Route>
-                  </Route>
-                  <Route path="survey" element={<Outlet />}>
-                    <Route path=":id" element={<Survey />}></Route>
-                    <Route path="single-survey/:survey_id" element={<Create_Survey />}></Route>
-                    <Route path="create-survey" element={<Create_Survey />}></Route>
+                  <Route path="/main" element={<Main />}>
+                    <Route path="workorder" element={<Workorder />}>
+                      <Route path="create-workorder" element={<Create_Workorder />}></Route>
+                    </Route>
+                    <Route path="survey" element={<Outlet />}>
+                      <Route path=":id" element={<Survey />}></Route>
+                      <Route path="single-survey/:survey_id" element={<Create_Survey />}></Route>
+                      <Route path="create-survey" element={<Create_Survey />}></Route>
+                    </Route>
                   </Route>
                 </Route>
-              </Route>
-            </Routes>
+              </Routes>
+            </NotificationContext.Provider>
           </SurveyContext.Provider>
         </WorkorderContext.Provider>
       </AuthContext.Provider>

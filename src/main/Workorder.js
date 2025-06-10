@@ -23,7 +23,7 @@ import {
 
 import Grid from "@mui/material/Grid2";
 import { v4 } from "uuid";
-import { AuthContext, WorkorderContext } from "./AuthCOntext";
+import { AuthContext, NotificationContext, WorkorderContext } from "./AuthCOntext";
 
 import { useCollection, useCollectionData } from "react-firebase-hooks/firestore";
 import BallotRoundedIcon from "@mui/icons-material/BallotRounded";
@@ -33,6 +33,7 @@ function Workorder() {
   const [open_workorder_model, setOpen_workorder_model] = useState(false);
   const auth = useContext(AuthContext);
   const { workorder, setWorkorder } = useContext(WorkorderContext);
+  const { setNotification } = useContext(NotificationContext);
 
   const navigate = useNavigate();
   const mobileMatches = useMediaQuery("(max-width: 600px)");
@@ -122,6 +123,7 @@ function Workorder() {
               work_ordername: workorder,
               createdAt: Date.parse(new Date()),
             });
+            setNotification("Created Work Order successfully.");
             setOpen_workorder_model(false);
             getAllData();
           },
